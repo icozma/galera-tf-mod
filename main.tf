@@ -31,7 +31,7 @@ resource "digitalocean_droplet" "galera_cluster_node" {
 resource "digitalocean_droplet" "galera_loadbalancer" {
   count              = 2
   image              = "${var.image_slug}"
-  name               = "${var.project}-db-loadbalancer-${format("%02d", count.index + 1)}"
+  name               = "${terraform.workspace}-${var.project}-db-loadbalancer-${format("%02d", count.index + 1)}"
   region             = "${var.region}"
   size               = "${var.lb_size}"
   private_networking = true
