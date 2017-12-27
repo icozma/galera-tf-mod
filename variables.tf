@@ -9,6 +9,11 @@ variable "db_node_size" {
   default = ""
 }
 
+variable "lb_size" {
+  type    = "string"
+  default = "c-2"
+}
+
 variable "project" {}
 
 variable "region" {}
