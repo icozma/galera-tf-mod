@@ -37,3 +37,12 @@ variable "ssh_fingerprint" {}
 variable "public_key" {}
 
 variable "ansible_user" {}
+
+# module outputs
+output "loadbalancer_tag" {
+  value = "${digitalocean_tag.resource_role2.name}"
+}
+
+output "database_tag" {
+  value = "${digitalocean_tag.resource_role1.name}"
+}
