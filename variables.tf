@@ -14,6 +14,11 @@ variable "lb_size" {
   default = "c-2"
 }
 
+variable "db_async_count" {
+  type    = "string"
+  default = "1"
+}
+
 variable "project" {}
 
 variable "region" {}
