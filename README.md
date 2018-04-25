@@ -22,7 +22,7 @@
 #### main.tf
 
     module "galera-cluster" {
-      source           = "git::git@bitbucket.org:cmndrsp0ck/galera-cluster.git?ref=v1.0.2"
+      source           = "github.com/cmndrsp0ck/galera-tf-mod.git?ref=v1.0.2"
       db_node_count    = "3"
       db_node_size     = "16gb"
       lb_size          = "c-2"
