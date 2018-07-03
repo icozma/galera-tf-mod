@@ -22,7 +22,7 @@
 #### main.tf
 
     module "galera-cluster" {
-      source           = "git::git@bitbucket.org:cmndrsp0ck/galera-cluster.git?ref=v1.0.0"
+      source           = "git::git@bitbucket.org:cmndrsp0ck/galera-cluster.git?ref=v1.0.6"
       db_node_count    = "5"
       db_node_size     = "16gb"
       lb_size          = "c-2"
@@ -35,4 +35,3 @@
       ansible_user     = "${var.ansible_user}"
     }
 
-**note**: The module *source* path used depends on how you've set up your directory structure.
