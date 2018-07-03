@@ -1,5 +1,5 @@
 resource "digitalocean_tag" "env_tag" {
-  name = "${terraform.workspace}"
+  name = "${basename(path.root)}"
 }
 
 resource "digitalocean_tag" "project_tag" {
@@ -12,10 +12,6 @@ resource "digitalocean_tag" "resource_role1" {
 
 resource "digitalocean_tag" "resource_role2" {
   name = "database-loadbalancer"
-}
-
-resource "digitalocean_tag" "resource_role3" {
-  name = "async-slave"
 }
 
 resource "digitalocean_tag" "add_tag" {

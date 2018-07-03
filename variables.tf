@@ -14,11 +14,6 @@ variable "lb_size" {
   default = "c-2"
 }
 
-variable "db_async_count" {
-  type    = "string"
-  default = "1"
-}
-
 variable "project" {}
 
 variable "region" {}
@@ -37,12 +32,3 @@ variable "ssh_fingerprint" {}
 variable "public_key" {}
 
 variable "ansible_user" {}
-
-# module outputs
-output "loadbalancer_tag" {
-  value = "${digitalocean_tag.resource_role2.name}"
-}
-
-output "database_tag" {
-  value = "${digitalocean_tag.resource_role1.name}"
-}
