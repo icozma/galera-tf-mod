@@ -21,7 +21,7 @@ class Problema:
   COEFICIENT_DELTA_MUTATIE_CROMOZOM_INDIVIDUAL = .05   # deplasarea mutatiei
   COEFICIENT_INDIVIZI_MATE = .5                        # % un individ se imperecheaza
 
-
+  # OUTSIDE
   def demap(self, map):
       ret = []
       for c in map.keys():
@@ -49,8 +49,12 @@ class Problema:
       raise TypeError('Unknown type:', type(obj))
 
 
-  #  wrapping fitness to save Individ + fitness at calc. time
-  def fitness( self, i ): 
+  def fitness( self, i ):   
+  '''  wrapping fitness
+        save Individ
+        and calculate fitness at calc. time
+  '''
+
       start = time.time()
       ret = self.raw_fitness(i['caracter'])
       end = time.time()
@@ -70,7 +74,7 @@ class Problema:
       self.save(  json.dumps(obj, default=self.default_encoding_for_json) , sufix=str(obj['score'])[:6], specia = i['specie'] )
       return ret
 
-
+  # OUTSIDE
   def get_timestamp(self):
     from datetime import datetime
     now = datetime.now()
