@@ -21,11 +21,14 @@ class Problema:
   COEFICIENT_DELTA_MUTATIE_CROMOZOM_INDIVIDUAL = .05   # deplasarea mutatiei
   COEFICIENT_INDIVIZI_MATE = .5                        # % un individ se imperecheaza
 
-  def __init__(self, fitness, space, is_bitmap_space=False):
+
+  def __init__(self, fitness, space, is_bitmap_space=False, save_to=None):
     self.raw_fitness = fitness          # mandatory 
     self.SPACE = self.ordered_space(space)   # mandatory 
     # self.path_to_evol = path_to_evol          # optional 
     self.is_bitmap_space = is_bitmap_space      # ????
+    self.save_to = save_to
+
 
   def ordered_space(self, S):
     """ Sort the space
@@ -39,6 +42,7 @@ class Problema:
       else:
         T[c] = S[c]
     return T
+
 
   def fitness( self, i ):   
       """ wrapping fitness:
@@ -59,8 +63,11 @@ class Problema:
       # if self.is_bitmap_space:
       #   # obj[ i['specie'] + '_demapped' ] =  json.dumps( dict2list( caracter ), default=default_encoding_for_json)
       #   obj[ i['specie'] + '_demapped' ] =  json.dumps(caracter , default=default_encoding_for_json)
-
-      self.save(  json.dumps(obj, default=default_encoding_for_json) , sufix=str(obj['score'])[:6], specia = obj['specie'] )
+      if self.save_to:    
+        self.save(  obj=json.dumps(obj,default=default_encoding_for_json) , 
+                    path = self.save_to,
+                    sufix=str(obj['score'])[:6], 
+                    specia = obj['specie'] )
       return score
 
 
@@ -75,7 +82,7 @@ class Problema:
         p.live_N_generations(G=n_generatii, mortality=mortalitate, type_of_life=type_of_life)
 
 
-  def save(self, d, path='.', sufix='', specia='' ):  
+  def save(self, obj, path='.', sufix='', specia='' ):  
     """ Saves as specia > runda > individ_name_score_timestamp
     """
     def make_folder_if_need( f ):
@@ -105,7 +112,7 @@ class Problema:
     fname = os.path.join( folder ,  fname )
     
     f = open( fname ,"a+")
-    f.write( str(d) )
+    f.write( str(obj) )
     f.close()
 
 
@@ -146,6 +153,3 @@ class Problema:
   #     ret.to_csv( os.path.join(self.path_to_evol, specie+'_summary.csv' ) )
 
   #   return ret[c_ret]
-
-
-

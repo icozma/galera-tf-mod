@@ -32,8 +32,6 @@ class Problema_tests(unittest.TestCase):
         pb = Problema(fitness=self.f, space=self.Space)
         d = { 'x':2 , 'y':2  }
         i = Individ( pb=pb, d=d)
-        print( "Individul ", i )
-        pb.save( i)
 
         self.assertNotEqual(1, 0, "Shall be >0, macar o mutatie ")
      
