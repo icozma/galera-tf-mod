@@ -1,5 +1,5 @@
-from evol.individ import Individ
-from evol.problema import Problema
+from src.individ import Individ
+from src.problema import Problema
 
 from random import random,randrange
 
@@ -75,7 +75,7 @@ class Populatie:
   """
   def live(self, mortality=.5, type_of_life='better'):
       # combinari si mutatii
-
+      
       if type_of_life == 'worse':
         self.sort(reverse=False)
       else:  #  type_of_life == 'better':    

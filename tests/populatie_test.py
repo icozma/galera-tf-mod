@@ -20,7 +20,7 @@ class Populatie_tests(unittest.TestCase):
         def my_fitness( i ):
             return -i['x']**2 + 1 -i['y']**2 # +i['z']
 
-        self.pb = Problema(fitness=my_fitness,  path_to_evol='./temp', space=Space)
+        self.pb = Problema(fitness=my_fitness, space=Space)
 
     def test_make_populatie(self):
         from src.individ import Individ
