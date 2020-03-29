@@ -26,11 +26,11 @@ class Populatie:
     ret = sum( [v.fitness_val for v in self] )/len(self) if len(self)>0 else -1
     return ret
   
+  
   def add_insi(self, N=1):  
     for i in range(N):
       self.insi.append( Individ(pb=self.pb, specie=self.specie) ) 
 
-    
     
   def __setitem__( self, idx, data ):   
     if idx >= len(self.insi ):
@@ -75,7 +75,7 @@ class Populatie:
   """
   def live(self, mortality=.5, type_of_life='better'):
       # combinari si mutatii
-      
+
       if type_of_life == 'worse':
         self.sort(reverse=False)
       else:  #  type_of_life == 'better':    
