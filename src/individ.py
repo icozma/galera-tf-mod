@@ -1,102 +1,105 @@
 from random import random , randrange, choice
-from evol.problema import Problema
+from src.problema import Problema
+from src.utils import get_timestamp
 
 from pprint import pformat
 import json
+import os
 
-class Individ:
-        
-  # def __init__(self, g=None, pb=None, file=None, name='', specie='params', with_calc_fitness=True, caracter=None):  # fitenss, gene, problema
-  def __init__(self, *args, **kwargs):  # fitenss, gene, problema
-    #args -- tuple of anonymous arguments
-    #kwargs -- dictionary of named arguments
-        # self.num_holes = kwargs.get('num_holes',random_holes())
+class Individ: 
 
-    self.name   = kwargs.get('name','')
-    self.specie = kwargs.get('specie','')
+  def __init__(self, pb, *args, **kwargs):  
+      """ create individ from g or random, if g=None
+      """
+      self.verbose = kwargs.get('verbose',False)
+      self.name = get_timestamp()
+      self.specie = kwargs.get('specie','')
+      self.gene = None
+      self.pb = pb
+      if not isinstance(self.pb, Problema):
+        raise Exception("Inidivid fara probleme!") 
 
-    self.pb = kwargs.get('pb',None) 
-    if isinstance(self.pb, Problema):
-        self.f = self.pb.fitness
-    else:
-      raise Exception("Inidivid fara probleme!")    
+      g = kwargs.get('g',None)
+      d = kwargs.get('d',None)
+      f = kwargs.get('f',None)
 
-    self.file = kwargs.get('file',None) 
-    self.specie = kwargs.get('specie','wolverine') 
+      if g:   self.gene = g         # build from genes list
+      elif d: self.gene = self.__genes_from_dict( d=d )  if d else None
+      elif f: self.gene = self.__genes_from_file( f=f ) if f else None
+      else:   self.gene = self.get_individ_random()      
 
-    g = None
-    if self.file is not None: 
-      with open(self.file) as json_file:
-        data = json.load( json_file )
-        if self.specie in data:
-          g = self.__from_caracter( data[self.specie] )
-        else: 
-          raise ValueError('Individ deserialization failed! \n\tSpecia {specie} nu este gasita in {fis}'.format( specie= self.specie, fis=self.file ))
-            
-    if g is None:
-      self.gene = self.get_individ_random()   
-    else: 
-      self.gene = g
-
-    caracter = kwargs.get('caracter', None) 
-    if caracter:
-      self.__from_caracter( caracter )
-
-    with_calc_fitness = kwargs.get('with_calc_fitness', True) 
-    if with_calc_fitness:
-      self.fitness_val = self.fitness()
-    else:
+      # needed not to recalculate fitness on each mutation
+      with_calc_fitness = kwargs.get('with_calc_fitness',True)
       self.fitness_val = -1
+      if with_calc_fitness:
+          # c = self.get_caracter()
+          # self.fitness_val = self.pb.fitness(c)
+          self.fitness_val = self.pb.fitness( self )
 
 
-  def __from_caracter(self, car={}, name=''):
-    g = {}
-    for c in car.keys():   # construieste genele pe spatiu   
-      is_sorted = self.pb.SPACE[c] == sorted( self.pb.SPACE[c])
-      if not is_sorted:
-        print( 'Atentie dimensiune nesortata, poate vrei sa o sortezi in spatiu mai intai! see', c)
-      g[c] = 2
-      if is_sorted:
-        for i in range( len(self.pb.SPACE[c]) ) :
-          g[c] = i
-          if car[c] <= self.pb.SPACE[c][i]  :
-            break       
-      else:
-        for i in range( len(self.pb.SPACE[c]) ) :
-          g[c] = i
-          if car[c] == self.pb.SPACE[c][i]  :
-            break    
-
-    self.gene = g
-    self.name = name
-    return g
+  def __genes_from_file(self,  f=''):
+      """ create individ from json file
+      """
+      g = None
+      if os.path.exists(f): 
+        with open(self.file) as json_file:
+          data = json.load( json_file )
+          if self.specie in data:
+            g = self.__genes_from_dict( data[self.specie] )
+          else: 
+            raise ValueError('Individ deserialization failed! \n\tSpecia {specie} nu este gasita in {fis}'.format( specie= self.specie, fis=self.file ))
+      return g
 
 
-  def asemanare( self, b ):    
-    ret = 0 
-    
-    for k in self.pb.SPACE.keys():
-      l = len( self.pb.SPACE[k] )
-      ret += abs( self.gene[k] - b.gene[k] ) / l
-    
-    ret = ret / len(self.pb.SPACE.keys())
-    
-    return ret
-    
-          
   def get_individ_random(self):
-    self.name = self.pb.get_timestamp()
+    """ return genes of a random individ
+    """
+    if self.verbose:       
+      import sys
+      fn = sys._getframe().f_code.co_name
+      print( fn )
+      
     g = {}
     for k in self.pb.SPACE.keys():
       g[ k ] =  randrange( len( self.pb.SPACE[k]) ) 
     return g
-  
-    
-  def fitness( self ):
-    c = self.get_caracter()
-    self.caracter = c['caracter']
-    self.fitness_val = self.f( c )
-    return self.fitness_val
+
+
+  def __genes_from_dict(self, d={}, name=''):
+    if self.verbose:       
+      import sys
+      fn = sys._getframe().f_code.co_name
+      print( fn )
+
+    g = {}
+    for c in d.keys():   # construieste genele pe spatiu   
+      for i in range( len(self.pb.SPACE[c]) ) :
+        if d[c] <= self.pb.SPACE[c][i]  :
+          g[c] = i
+          break       
+
+    print(g)
+    return g
+
+
+  def like( self, b ):    
+    """ return how alike are two individs, 
+         LIKLEHOOD:   distance between indexes
+    """
+    ret = 0 
+    for k in self.pb.SPACE.keys():
+      l = len( self.pb.SPACE[k] )
+      ret += abs( self.gene[k] - b.gene[k] )
+    ret = ret / len(self.pb.SPACE.keys())
+    return ret
+
+    # ret = 0 
+    # S = self.pb.SPACE
+    # for k in S.keys():
+    #   l = abs( max( S[k] ) - min( S[k] ) )
+    #   ret += abs( S[self.gene[k]] - S[b.gene[k]] ) / l
+    # ret = ret / len(S.keys())
+    # return ret
       
       
   def mutatie( self , with_calc_fitness=True):
@@ -122,8 +125,6 @@ class Individ:
     name = "*{}".format(self.name)
 
     i = self.__class__(pb=self.pb, g=m, name=name, specie=self.specie, with_calc_fitness=with_calc_fitness)
-
-
     return i
 
       
@@ -147,26 +148,25 @@ class Individ:
 
 
   def get_caracter( self ):
-    caracter_temp = {}   
-    for k in self.gene.keys():
-      caracter_temp[k] = self.pb.SPACE[k][ self.gene[k]]
+    """ get character 
+    """
+    c = {}   
+    if self.gene :
+      for k in self.gene.keys():
+        c[k] = self.pb.SPACE[k][ self.gene[k]]
+    return c
+    
 
-    ret = {
-        'name': self.name,  
-        'specie': self.specie,
-        'caracter': caracter_temp
-    }
+  def to_dict( self ):
+    return {   
+                'specie': self.specie,
+                'name': self.name,
+                'score':  self.fitness_val, 
+                'caracter': self.get_caracter(),
+                'gene': self.gene,
+            }  
 
-    return ret 
-      
- 
+
   def __str__( self ):
-    return pformat( 
-              str( 
-                {   'specie': self.specie,
-                    'name': self.name,
-                    'fitness':  self.fitness_val, 
-                    'caracter': self.caracter,
-                    'gene': self.gene,
-                })   , indent=4)
+    return pformat( self.to_dict(), indent=4)
 
