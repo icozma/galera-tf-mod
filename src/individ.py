@@ -9,8 +9,18 @@ import os
 class Individ: 
 
   def __init__(self, pb, *args, **kwargs):  
-      """ create individ from g or random, if g=None
-      """
+      """ Creates individ from:
+            g = list of genes over pb.Space indexes
+            d = dictionary of characteristics over pb.Space
+            f = json file with dictionary, see d
+            random individ over pb.Space
+      
+      Arguments:
+          pb {Problem} -- [description]
+      
+      Raises:
+          Exception: [description]
+      """    
       self.verbose = kwargs.get('verbose',False)
       self.name = get_timestamp()
       self.specie = kwargs.get('specie','')
@@ -25,8 +35,8 @@ class Individ:
 
       if g:   self.gene = g         # build from genes list
       elif d: self.gene = self.__genes_from_dict( d=d )  if d else None
-      elif f: self.gene = self.__genes_from_file( f=f ) if f else None
-      else:   self.gene = self.get_individ_random()      
+      elif f: self.gene = self.__genes_from_json( f=f ) if f else None
+      else:   self.gene = self.__individ_random()      
 
       # needed not to recalculate fitness on each mutation
       with_calc_fitness = kwargs.get('with_calc_fitness',True)
@@ -37,9 +47,12 @@ class Individ:
           self.fitness_val = self.pb.fitness( self )
 
 
-  def __genes_from_file(self,  f=''):
-      """ create individ from json file
-      """
+  def __genes_from_json(self,  f=''):
+      """Create individ from json file
+      
+      Keyword Arguments:
+          f {str} -- json file path  (default: {''})
+      """        
       g = None
       if os.path.exists(f): 
         with open(self.file) as json_file:
@@ -51,9 +64,9 @@ class Individ:
       return g
 
 
-  def get_individ_random(self):
+  def __individ_random(self):      
     """ return genes of a random individ
-    """
+    """        
     if self.verbose:       
       import sys
       fn = sys._getframe().f_code.co_name
@@ -66,6 +79,11 @@ class Individ:
 
 
   def __genes_from_dict(self, d={}, name=''):
+    """ return genes of an individ over the pb.Space
+    
+    Returns:
+        Dict -- dict of ganes
+    """    
     if self.verbose:       
       import sys
       fn = sys._getframe().f_code.co_name
@@ -78,31 +96,37 @@ class Individ:
           g[c] = i
           break       
 
-    print(g)
     return g
 
 
-  def like( self, b ):    
-    """ return how alike are two individs, 
+  def like( self, b ):  
+    """return how alike are two individs, 
          LIKLEHOOD:   distance between indexes
-    """
+    
+    Arguments:
+        b {Individ} -- the individ to compare
+    """      
     ret = 0 
     for k in self.pb.SPACE.keys():
       l = len( self.pb.SPACE[k] )
       ret += abs( self.gene[k] - b.gene[k] )
     ret = ret / len(self.pb.SPACE.keys())
     return ret
+      
+      
+  def mutate( self , with_calc_fitness=True):
+    """ chose a gene gt
+        find the chromozome to mutate in gene, as delta from curent poz, see COEFICIENT_DELTA_MUTATIE_CROMOZOM_INDIVIDUAL
+        fix the gene with delta if it has the chance, per COEFICIENT_MUTATIE_CROMOZOM_INDIVIDUAL
+        make a new individ 
+        recalculate the fitness if with_calc_fitness
 
-    # ret = 0 
-    # S = self.pb.SPACE
-    # for k in S.keys():
-    #   l = abs( max( S[k] ) - min( S[k] ) )
-    #   ret += abs( S[self.gene[k]] - S[b.gene[k]] ) / l
-    # ret = ret / len(S.keys())
-    # return ret
-      
-      
-  def mutatie( self , with_calc_fitness=True):
+    Keyword Arguments:
+        with_calc_fitness {bool} -- [description] (default: {True})
+    
+    Returns:
+        Individ -- the new individ with mutation
+    """    
     gt = list( self.gene.keys() )
     gena_fix = choice( gt )
 
@@ -113,7 +137,6 @@ class Individ:
     delta = Problema.COEFICIENT_DELTA_MUTATIE_CROMOZOM_INDIVIDUAL
     poz_pe_gena = (int)( len( self.pb.SPACE[gena_fix] ) * delta ) 
     val_mutatie = poz_pe_gena if random() <= self.pb.COEFICIENT_MUTATIE_CROMOZOM_INDIVIDUAL else -poz_pe_gena
-
 
     val_fix = self.gene[gena_fix] + val_mutatie
     val_fix = val_fix if val_fix >= 0 and val_fix < len( self.pb.SPACE[gena_fix] ) else self.gene[gena_fix]
@@ -129,13 +152,21 @@ class Individ:
 
       
   def mate( self, f):
+    """ Cross combine two individs
+    
+    Arguments:
+        f {Individ} -- female individ
+    
+    Returns:
+        Individ -- child individ
+    """   
     if f.gene == self.gene:  # clona ==> producem o serie de mutatii pe self
       nmut = 20
     else:
       nmut = 1
 
     for i in range( nmut ):
-      self = self.mutatie( with_calc_fitness=False )  
+      self = self.mutate( with_calc_fitness=False )  
     
     c = {}
     for k in self.gene.keys():
@@ -148,7 +179,10 @@ class Individ:
 
 
   def get_caracter( self ):
-    """ get character 
+    """ Gets the character of Individual
+    
+    Returns:
+        Dict -- of characteristics over pb.Space
     """
     c = {}   
     if self.gene :
@@ -158,6 +192,11 @@ class Individ:
     
 
   def to_dict( self ):
+    """ Converts to dict
+    
+    Returns:
+        Dict -- Individual specs as Dict
+    """    
     return {   
                 'specie': self.specie,
                 'name': self.name,
@@ -168,5 +207,10 @@ class Individ:
 
 
   def __str__( self ):
+    """ Converts to string
+    
+    Returns:
+        str -- 
+    """   
     return pformat( self.to_dict(), indent=4)
 
